@@ -7,7 +7,6 @@ import (
 	"io"
 	"log"
 	"os"
-	"strconv"
 )
 
 func main() {
@@ -33,16 +32,16 @@ func main() {
 		chunknum := numchunks - int64(i)
 		offset := chunknum * 1024
 		curchunk := make([]byte, 1024, 1024)
-		_, err := file.ReadAt(curchunk, offset)
+		n, err := file.ReadAt(curchunk, offset)
 		if err != nil {
 			if err != io.EOF {
 				log.Fatal(err)
 			}
 		}
+		curchunk = curchunk[:n] //Make sure we are only dealing with the bytes actually read
 
 		if prevchunk != nil {
 			hash := sha256.Sum256(prevchunk)
-			spew.Dump(strconv.Itoa(int(chunknum)) + ": " + hex.EncodeToString(hash[:32]))
 			curchunk = append(curchunk, hash[:32]...)
 		}
 		prevchunk = curchunk
